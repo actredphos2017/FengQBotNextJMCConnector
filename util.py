@@ -1,5 +1,10 @@
+import shutil
+
 from PIL import Image
 import os
+
+def force_rmdir(path: str):
+    shutil.rmtree(path, ignore_errors=True)
 
 def images_to_pdf(image_folder, output_pdf):
     # 获取文件夹中所有 JPG 文件

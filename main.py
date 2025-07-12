@@ -1,9 +1,12 @@
 import asyncio
 import json
 import websockets
-from websockets import ServerConnection
+from websockets import ServerConnection, ConnectionClosedOK
 
 from session import push_request
+
+host = "localhost"
+port = 24357
 
 
 def is_valid(code: str) -> bool:
@@ -11,8 +14,12 @@ def is_valid(code: str) -> bool:
 
 
 async def main(conn: ServerConnection):
+    print("客户端已连接")
     while True:
-        data = await conn.recv()
+        try:
+            data = await conn.recv()
+        except ConnectionClosedOK:
+            break
         res: any
         try:
             res = json.loads(data)
@@ -30,12 +37,17 @@ async def main(conn: ServerConnection):
         if not isinstance(code, str):
             continue
 
-        await conn.send(json.dumps(push_request(code)))
+        response = push_request(code)
+
+        response["SIGNAL"] = "RESPONSE"
+
+        await conn.send(json.dumps(response))
 
 
 async def start_server():
     # Start the WebSocket server
-    server = await websockets.serve(main, 'localhost', 8765)
+    server = await websockets.serve(main, host, port)
+    print("服务已启动")
     await server.wait_closed()
 
 
