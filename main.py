@@ -20,7 +20,6 @@ async def main(conn: ServerConnection):
             data = await conn.recv()
         except ConnectionClosedOK:
             break
-        res: any
         try:
             res = json.loads(data)
         except json.decoder.JSONDecodeError:
